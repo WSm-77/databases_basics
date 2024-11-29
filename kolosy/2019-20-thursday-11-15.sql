@@ -159,13 +159,89 @@ inner join (
 left join ChildBookCount
     on j2.member_no = ChildBookCount.member_no
 left join ParentsBookCount
-    on ChildBookCount.adult_member_no = ParentsBookCount.member_no
+    on j2.adult_member_no = ParentsBookCount.member_no
 order by BooksSum desc;
+
+-- third solution
+
+select
+    jm.firstname
+    , j1.member_no
+    , jm.lastname
+    , am.firstname
+    , am.lastname
+    , (
+        select
+            count(*)
+        from loanhist as lh1
+        where lh1.member_no in (j1.member_no, j1.adult_member_no)
+            and year(lh1.out_date) = 2001
+    ) as BooksSum
+    , a1.state
+    , a1.city
+    , a1.street
+    , a1.zip
+from juvenile as j1
+inner join member as jm
+    on j1.member_no = jm.member_no
+inner join adult as a1
+    on j1.adult_member_no = a1.member_no
+inner join member as am
+    on a1.member_no = am.member_no
+order by BooksSum desc
+
+
+-- select
+--     distinct
+--     member_no
+--     , title_no
+--     , isbn
+--     , out_date
+--     , year(out_date)
+-- from loanhist
+-- where year(out_date) = 2001
+--     and member_no in (388, 387)
 
 -- 3. Kategorie które w roku 1997 grudzień były obsłużone wyłącznie przez ‘United
 -- Package’
 
-
+select
+    distinct
+    CategoryName
+--     , Sh1.CompanyName
+--     , year(ShippedDate)
+--     , month(ShippedDate)
+from Categories as Cat1
+inner join Products as Prod1
+    on Cat1.CategoryID = Prod1.CategoryID
+inner join [Order Details] as OD1
+    on Prod1.ProductID = OD1.ProductID
+inner join Orders as O1
+    on OD1.OrderID = O1.OrderID
+inner join Shippers as Sh1
+    on O1.ShipVia = Sh1.ShipperID
+where Sh1.CompanyName = 'United Package'
+    and year(ShippedDate) = 1997
+    and month(ShippedDate) = 12
+except
+select
+    distinct
+    CategoryName
+--     , Sh1.CompanyName
+--     , year(ShippedDate)
+--     , month(ShippedDate)
+from Categories as Cat1
+inner join Products as Prod1
+    on Cat1.CategoryID = Prod1.CategoryID
+inner join [Order Details] as OD1
+    on Prod1.ProductID = OD1.ProductID
+inner join Orders as O1
+    on OD1.OrderID = O1.OrderID
+inner join Shippers as Sh1
+    on O1.ShipVia = Sh1.ShipperID
+where Sh1.CompanyName != 'United Package'
+    and year(ShippedDate) = 1997
+    and month(ShippedDate) = 12;
 
 -- 4. Wybierz klientów, którzy kupili przedmioty wyłącznie z jednej kategorii w marcu
 -- 1997 i wypisz nazwę tej kategorii
