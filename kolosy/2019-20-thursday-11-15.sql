@@ -245,3 +245,34 @@ where Sh1.CompanyName != 'United Package'
 
 -- 4. Wybierz klientów, którzy kupili przedmioty wyłącznie z jednej kategorii w marcu
 -- 1997 i wypisz nazwę tej kategorii
+
+select
+    distinct
+    CustomerID
+    , CategoryName
+from Products as Prod1
+inner join Categories
+    on Prod1.CategoryID = Categories.CategoryID
+inner join [Order Details] as OD1
+    on Prod1.ProductID = OD1.ProductID
+inner join Orders as O1
+    on OD1.OrderID = O1.OrderID
+where
+    year(OrderDate) = 1997
+    and month(OrderDate) = 3
+    and CustomerID in (
+        select
+            O2.CustomerID
+        --     , count(distinct Prod1.CategoryID) as DifferentCategoriesCount
+        from Products as Prod2
+        inner join [Order Details] as OD2
+            on Prod2.ProductID = OD2.ProductID
+        inner join Orders as O2
+            on OD2.OrderID = O2.OrderID
+        where
+            year(OrderDate) = 1997
+            and month(OrderDate) = 3
+        group by O2.CustomerID
+        having
+            count(distinct Prod2.CategoryID) = 1
+    )
