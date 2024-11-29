@@ -34,6 +34,8 @@ order by BooksCount desc
 -- 2. Dla każdego dziecka wybierz jego imię nazwisko, adres, imię i nazwisko rodzica i
 -- ilość książek, które oboje przeczytali w 2001
 
+-- first solution
+
 with ParentsBookCount as (
     select
         a1.member_no
@@ -90,6 +92,70 @@ select
 from juvenile as j2
 inner join member as m
     on j2.member_no = m.member_no
+left join ChildBookCount
+    on j2.member_no = ChildBookCount.member_no
+left join ParentsBookCount
+    on ChildBookCount.adult_member_no = ParentsBookCount.member_no
+order by BooksSum desc;
+
+-- second solution
+
+with ParentsBookCount as (
+    select
+        a1.member_no
+--         , year(lh1.out_date) as OutYear
+        , count(lh1.title_no) as BookCount
+    from adult as a1
+    inner join loanhist as lh1
+        on a1.member_no = lh1.member_no
+    where year(lh1.out_date) = 2001
+    group by a1.member_no
+--            , lh1.out_date
+), ChildBookCount as (
+    select
+        j1.member_no
+--         , year(lh1.out_date) as OutYear
+        , j1.adult_member_no
+        , count(lh1.title_no) as BookCount
+    from juvenile as j1
+    inner join loanhist as lh1
+        on j1.member_no = lh1.member_no
+    where year(lh1.out_date) = 2001
+    group by j1.member_no
+        , adult_member_no
+--            , lh1.out_date
+)
+select
+    m.firstname
+    , m.lastname
+--     , m.member_no
+--     , j2.member_no
+--     , ChildBookCount.BookCount
+--     , ParentsBookCount.BookCount
+    , Parents.firstname
+    , Parents.lastname
+    , Parents.state
+    , Parents.city
+    , Parents.street
+    , Parents.zip
+    , isnull(ChildBookCount.BookCount, 0) + isnull(ParentsBookCount.BookCount, 0) as BooksSum
+from juvenile as j2
+inner join member as m
+    on j2.member_no = m.member_no
+inner join (
+    select
+        a2.member_no
+        , firstname
+        , lastname
+        , state
+        , city
+        , street
+        , zip
+    from adult as a2
+    inner join member
+        on a2.member_no = member.member_no
+) as Parents
+    on Parents.member_no = j2.adult_member_no
 left join ChildBookCount
     on j2.member_no = ChildBookCount.member_no
 left join ParentsBookCount
