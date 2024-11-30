@@ -29,6 +29,36 @@ where m.member_no not in (
 
 -- 2. Wybierz kategorię, która w danym roku 1997 najwięcej zarobiła, podział na miesiące
 
+with CategoriesProfit as (
+    select
+        CategoryID
+        , year(OrderDate) as OrderYear
+        , datename(month, OrderDate) as OrderMonth
+        , round(sum(OD.Quantity * OD.UnitPrice * (1 - OD.Discount)), 2) as CategorySum
+    from [Order Details] as OD
+    inner join Products as p
+        on OD.ProductID = p.ProductID
+    inner join Orders as O
+        on OD.OrderID = O.OrderID
+    group by CategoryID, year(OrderDate), datename(month, OrderDate)
+), RankedCategoriesProfit as (
+    select
+        CategoryID
+        , CategorySum
+        , OrderMonth
+        , rank() over (partition by OrderMonth order by CategorySum desc) as ProfitRank
+    from CategoriesProfit
+    where OrderYear = 1997
+)
+select
+    OrderMonth
+    , CategoryName
+    , CategorySum
+from RankedCategoriesProfit
+inner join Categories as Cat
+    on Cat.CategoryID = RankedCategoriesProfit.CategoryID
+where ProfitRank = 1
+
 with CategoriesMonthsProfits as (
     select
         CategoryName
@@ -56,7 +86,6 @@ where CMP1.CategoryProfit = (
     where CMP1.OrderMonth = CMP2.OrderMonth
     )
 order by OrderMonth
-
 
 -- 3. Dane pracownika i najczęstszy dostawca pracowników bez podwładnych
 
