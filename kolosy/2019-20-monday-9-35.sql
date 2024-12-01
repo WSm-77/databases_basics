@@ -133,6 +133,8 @@ order by CustomerID
 
 -- 4. Dla każdego klienta najczęściej zamawianą kategorię w dwóch wersjach.
 
+-- wersja 1
+
 with CategoryCount as (
     select
         Cust.CustomerID
@@ -160,8 +162,41 @@ select
     distinct
     CategoryCount.CustomerID
     , CategoryName
-    , CategoryCount.CatCount
+--     , CategoryCount.CatCount
 from CustomerMaxCount
 inner join CategoryCount
     on CategoryCount.CustomerID = CustomerMaxCount.CustomerID and CatCount = MaxCount
 order by 1
+
+-- wersja 2
+
+with CategoryCount as (
+    select
+        CategoryName
+        , CustomerID
+        , count(*) as CategoryCount
+    from Orders as o1
+    inner join [Order Details] as od1
+        on o1.OrderID = od1.OrderID
+    inner join Products as p1
+        on od1.ProductID = p1.ProductID
+    inner join Categories as c1
+        on p1.CategoryID = c1.CategoryID
+    group by CategoryName, CustomerID
+), CategoryCountRanking as (
+    select
+        CategoryName
+        , CustomerID
+        , CategoryCount
+        , rank() over (
+            partition by CustomerID
+            order by CategoryCount desc
+        ) as Rank
+    from CategoryCount
+)
+select
+    distinct
+    CustomerID
+    , CategoryName
+from CategoryCountRanking
+where Rank = 1
