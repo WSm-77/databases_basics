@@ -105,25 +105,23 @@ select
     O.CustomerID
 from Orders as O
 inner join [Order Details] as OD
-on O.OrderID = OD.OrderID
+    on O.OrderID = OD.OrderID
 inner join Products as Prod
-on OD.ProductID = Prod.ProductID
+    on OD.ProductID = Prod.ProductID
 inner join Categories as Cat
-on Prod.CategoryID = Cat.CategoryID
+    on Prod.CategoryID = Cat.CategoryID
 where Cat.CategoryName = 'Seafood'
 order by 1
-
--- TODO
 
 select
     Cust2.CustomerID
 from Customers as Cust
 inner join Orders as O
-on Cust.CustomerID = O.CustomerID
+    on Cust.CustomerID = O.CustomerID
 inner join [Order Details] as OD
-on O.OrderID = OD.OrderID
+    on O.OrderID = OD.OrderID
 inner join Products as Prod
-on OD.ProductID = Prod.ProductID
+    on OD.ProductID = Prod.ProductID
 inner join Categories as Cat
     on Prod.CategoryID = Cat.CategoryID and Cat.CategoryName = 'Seafood'
 right join Customers as Cust2

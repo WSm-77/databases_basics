@@ -51,7 +51,7 @@ inner join (
         on OD.OrderID = O.OrderID and year(O.OrderDate) = 1997
     group by O.EmployeeID, O.OrderID
 ) as OrdersValues
-on OrdersValues.EmployeeID = Emp.EmployeeID
+    on OrdersValues.EmployeeID = Emp.EmployeeID
 group by Emp.EmployeeID, Emp.FirstName, Emp.LastName
 -- , OrdersValues.order_year
 order by handled_orders_total_price desc;

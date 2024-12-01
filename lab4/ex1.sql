@@ -19,4 +19,4 @@ select buyer_name,
        Sales.buyer_id,
        qty
 from Buyers inner join Sales
-on Sales.buyer_id = Buyers.buyer_id
+    on Sales.buyer_id = Buyers.buyer_id
